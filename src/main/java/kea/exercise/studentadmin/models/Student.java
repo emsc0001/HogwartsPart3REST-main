@@ -1,146 +1,60 @@
 package kea.exercise.studentadmin.models;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import edu.hogwarts.studentadmin.dtos.StudentPatchDTO;
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
-import java.util.List;
 
 @Entity
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
     private String firstName;
     private String middleName;
     private String lastName;
-    private String allName;
-    @ManyToOne
-    @JoinColumn(name = "house")
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "name")
-    @JsonIdentityReference(alwaysAsId = true)
-    private House house;
-
     private LocalDate dateOfBirth;
+    private @ManyToOne(fetch = FetchType.EAGER) House house;
     private boolean prefect;
     private int enrollmentYear;
     private int graduationYear;
     private boolean graduated;
     private int schoolYear;
 
-    public Student(String firstName, String middleName, String lastName, LocalDate dateOfBirth, boolean prefect,
-                   int enrollmentYear, Integer graduationYear, boolean graduated, House house, int schoolYear) {
+    public Student(Long id, String firstName, String middleName, String lastName, LocalDate dateOfBirth, House house, boolean prefect, int enrollmentYear, int graduationYear, boolean graduated, int schoolYear) {
+        this.id = id;
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
+        this.house = house;
         this.prefect = prefect;
         this.enrollmentYear = enrollmentYear;
         this.graduationYear = graduationYear;
         this.graduated = graduated;
-        this.house = house;
         this.schoolYear = schoolYear;
-        this.allName = (firstName + " " + (middleName.isEmpty() ? "" : middleName + " ") + lastName + " ").trim();
     }
 
-    public Student(String fullName, LocalDate dateOfBirth, boolean prefect,
-                   int enrollmentYear, int graduationYear, boolean graduated, House house, int schoolYear) {
-        List<String> nameParts = List.of(fullName.split("\\s"));
-
-        this.firstName = getFirstNameFromFullName(nameParts);
-        this.middleName = getMiddleNameFromFullName(nameParts);
-        this.lastName = getLastNameFromFullName(nameParts);
-        this.dateOfBirth = dateOfBirth;
-        this.prefect = prefect;
-        this.enrollmentYear = enrollmentYear;
-        this.graduationYear = graduationYear;
-        this.graduated = graduated;
-        this.house = house;
-        this.schoolYear = schoolYear;
-        this.allName = (firstName + " " + (middleName.isEmpty() ? "" : middleName + " ") + lastName + " ").trim();
+    public Student(String fullName) {
+        setFullName(fullName);
+        // Leave other attributes as null
+        this.id = null;
+        this.dateOfBirth = null;
+        this.house = null;
+        this.prefect = false;
+        this.enrollmentYear = 0;
+        this.graduationYear = 0;
+        this.graduated = false;
+        this.schoolYear = 0;
     }
 
     public Student() {
     }
 
-    public Student(Student otherStudent) {
-        this.firstName = otherStudent.getFirstName();
-        this.middleName = otherStudent.getMiddleName();
-        this.lastName = otherStudent.getLastName();
-        this.dateOfBirth = otherStudent.getDateOfBirth();
-        this.prefect = otherStudent.isPrefect();
-        this.enrollmentYear = otherStudent.getEnrollmentYear();
-        this.graduationYear = otherStudent.getGraduationYear();
-        this.graduated = otherStudent.isGraduated();
-        this.house = otherStudent.getHouse();
-        this.schoolYear = otherStudent.getSchoolYear();
+    public Long getId() {
+        return id;
     }
 
-    public void copyFrom(Student otherStudent) {
-        this.setFirstName(otherStudent.getFirstName());
-        this.setMiddleName(otherStudent.getMiddleName());
-        this.setLastName(otherStudent.getLastName());
-        this.setDateOfBirth(otherStudent.getDateOfBirth());
-        this.setPrefect(otherStudent.isPrefect());
-        this.setEnrollmentYear(otherStudent.getEnrollmentYear());
-        this.setGraduationYear(otherStudent.getGraduationYear());
-        this.setGraduated(otherStudent.isGraduated());
-        this.setHouse(otherStudent.getHouse());
-    }
-
-    public void applyPatch(StudentPatchDTO patchDTO) {
-        if (patchDTO.getPrefect() != null) {
-            this.setPrefect(patchDTO.getPrefect());
-        }
-        if (patchDTO.getSchoolYear() != 0) {
-            this.setSchoolYear(patchDTO.getSchoolYear());
-        }
-        if (patchDTO.getGraduated() != null) {
-            this.setGraduated(patchDTO.getGraduated());
-        }
-        if (patchDTO.getGraduationYear() != 0) {
-            this.setGraduationYear(patchDTO.getGraduationYear());
-        }
-
-        // Check if graduationYear is not null and greater than 0
-        if (patchDTO.getGraduationYear() > 0) {
-            this.setGraduated(true);
-        }
-    }
-
-
-    public String getFirstNameFromFullName(List<String> nameParts) {
-         String firstNameLowerCased = nameParts.get(0).toLowerCase();
-         String firstLetterCapitalized = firstNameLowerCased.substring(0, 1).toUpperCase();
-
-         return firstLetterCapitalized + firstNameLowerCased.substring(1);
-    }
-
-    public String getMiddleNameFromFullName(List<String> nameParts) {
-        String result = "";
-
-        if (nameParts.size() > 2) {
-            List<String> middleNames = nameParts.subList(1, nameParts.size() - 1);
-            for (int i = 0; i < middleNames.size(); i++) {
-                String middleNameLowerCased = middleNames.get(i).toLowerCase();
-                String capitalizedMiddleName = middleNameLowerCased.substring(0, 1).toUpperCase() +
-                        middleNameLowerCased.substring(1);
-
-                result += capitalizedMiddleName + " ";
-            }
-            return result.trim();
-        } else {
-            return "";
-        }
-    }
-
-    public String getLastNameFromFullName(List<String> nameParts) {
-        String lastNameLowerCased = nameParts.get(nameParts.size() - 1).toLowerCase();
-
-        return lastNameLowerCased.substring(0,1).toUpperCase() + lastNameLowerCased.substring(1);
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getFirstName() {
@@ -167,12 +81,43 @@ public class Student {
         this.lastName = lastName;
     }
 
+    public String getFullName() {
+        return hasMiddleName() ? this.firstName + " " + this.middleName + " " + this.lastName : this.firstName + " " + this.lastName;
+    }
+
+    public boolean hasMiddleName() {
+        return this.middleName != null;
+    }
+
+    public void setFullName(String fullName) {
+        if(fullName == null) return;
+        String[] names = fullName.split(" ");
+        if (names.length == 1) {
+            firstName = names[0];
+        } else if (names.length == 2) {
+            firstName = names[0];
+            lastName = names[1];
+        } else {
+            firstName = names[0];
+            middleName = names[1];
+            lastName = names[2];
+        }
+    }
+
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
     }
 
     public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public House getHouse() {
+        return house;
+    }
+
+    public void setHouse(House house) {
+        this.house = house;
     }
 
     public boolean isPrefect() {
@@ -207,40 +152,11 @@ public class Student {
         this.graduated = graduated;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public House getHouse() {
-        return house;
-    }
-
-    public void setHouse(House house) {
-        this.house = house;
-    }
-
     public int getSchoolYear() {
         return schoolYear;
     }
 
     public void setSchoolYear(int schoolYear) {
         this.schoolYear = schoolYear;
-    }
-
-    public String getAllName() {
-        return allName;
-    }
-
-    public void setAllName(String allName) {
-        this.allName = allName;
-    }
-
-    @Override
-    public String toString() {
-        return firstName + middleName + lastName + " ";
     }
 }

@@ -9,26 +9,26 @@ public class House {
     @Id
     private String name;
     private String founder;
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<HouseColor> houseColors;
+
+    private String color1;
+    private String color2;
+
+    public House(String name, String founder, String color1, String color2) {
+        this.name = name;
+        this.founder = founder;
+        this.color1 = color1;
+        this.color2 = color2;
+    }
 
     public House() {
     }
 
-    public House(String name, String founder, List<HouseColor> houseColors) {
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
         this.name = name;
-        this.founder = founder;
-        this.houseColors = houseColors;
-    }
-
-    public House(House otherHouse) {
-        this.founder = otherHouse.getFounder();
-        this.houseColors = otherHouse.getHouseColors();
-    }
-
-    public void copyFrom(House otherHouse) {
-        this.setFounder(otherHouse.getFounder());
-        this.setHouseColors(otherHouse.getHouseColors());
     }
 
     public String getFounder() {
@@ -39,19 +39,19 @@ public class House {
         this.founder = founder;
     }
 
-    public List<HouseColor> getHouseColors() {
-        return houseColors;
+    public String getColor1() {
+        return color1;
     }
 
-    public void setHouseColors(List<HouseColor> houseColors) {
-        this.houseColors = houseColors;
+    public void setColor1(String color1) {
+        this.color1 = color1;
     }
 
-    public String getName() {
-        return name;
+    public String getColor2() {
+        return color2;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setColor2(String color2) {
+        this.color2 = color2;
     }
 }

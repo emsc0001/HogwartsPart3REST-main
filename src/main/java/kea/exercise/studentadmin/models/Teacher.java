@@ -1,9 +1,5 @@
 package kea.exercise.studentadmin.models;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import edu.hogwarts.studentadmin.dtos.TeacherPatchDTO;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -12,77 +8,41 @@ import java.time.LocalDate;
 public class Teacher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
     private String firstName;
     private String middleName;
     private String lastName;
-    @JoinColumn(name = "house")
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "name")
-    @JsonIdentityReference(alwaysAsId = true)
-    @ManyToOne
-    private House house;
     private LocalDate dateOfBirth;
+    private @ManyToOne(fetch = FetchType.EAGER) House house;
     private boolean headOfHouse;
     @Enumerated(EnumType.STRING)
-    private EmploymentType employmentType;
+    private EmpType employmentType;
     private LocalDate employmentStart;
     private LocalDate employmentEnd;
 
-
-    public Teacher(String firstName, String middleName, String lastName, LocalDate dateOfBirth,
-                   boolean headOfHouse, EmploymentType employmentType, LocalDate employmentStart,
-                   LocalDate employmentEnd, House house) {
+    public Teacher(Long id, String firstName, String middleName, String lastName, LocalDate dateOfBirth, House house, boolean headOfHouse, EmpType employmentType, LocalDate employmentStart, LocalDate employmentEnd) {
+        this.id = id;
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
+        this.house = house;
         this.headOfHouse = headOfHouse;
         this.employmentType = employmentType;
         this.employmentStart = employmentStart;
         this.employmentEnd = employmentEnd;
-        this.house = house;
     }
 
     public Teacher() {
     }
 
-    public Teacher(Teacher otherTeacher) {
-        this.firstName = otherTeacher.getFirstName();
-        this.middleName = otherTeacher.getMiddleName();
-        this.lastName = otherTeacher.getLastName();
-        this.dateOfBirth = otherTeacher.getDateOfBirth();
-        this.headOfHouse = otherTeacher.isHeadOfHouse();
-        this.employmentType = otherTeacher.getEmploymentType();
-        this.employmentStart = otherTeacher.getEmploymentStart();
-        this.employmentEnd = otherTeacher.getEmploymentEnd();
-        this.house = otherTeacher.getHouse();
+    public Long getId() {
+        return id;
     }
 
-    public void applyPatch(TeacherPatchDTO teacherDTO) {
-        if (teacherDTO.getHeadOfHouse() != null) {
-            this.setHeadOfHouse(teacherDTO.getHeadOfHouse());
-        }
-
-        if (teacherDTO.getEmploymentEnd() != null) {
-            this.setEmploymentEnd(teacherDTO.getEmploymentEnd());
-        }
-
-        if (teacherDTO.getEmploymentType() != null) {
-            this.setEmploymentType(teacherDTO.getEmploymentType());
-        }
+    public void setId(Long id) {
+        this.id = id;
     }
-
-    public void copyFrom(Teacher otherTeacher) {
-        this.setFirstName(otherTeacher.getFirstName());
-        this.setMiddleName(otherTeacher.getMiddleName());
-        this.setLastName(otherTeacher.getLastName());
-        this.setDateOfBirth(otherTeacher.getDateOfBirth());
-        this.setHeadOfHouse(otherTeacher.isHeadOfHouse());
-        this.setEmploymentType(otherTeacher.getEmploymentType());
-        this.setEmploymentStart(otherTeacher.getEmploymentStart());
-        this.setEmploymentEnd(otherTeacher.getEmploymentEnd());
-    }
-
 
     public String getFirstName() {
         return firstName;
@@ -116,6 +76,14 @@ public class Teacher {
         this.dateOfBirth = dateOfBirth;
     }
 
+    public House getHouse() {
+        return house;
+    }
+
+    public void setHouse(House house) {
+        this.house = house;
+    }
+
     public boolean isHeadOfHouse() {
         return headOfHouse;
     }
@@ -124,11 +92,11 @@ public class Teacher {
         this.headOfHouse = headOfHouse;
     }
 
-    public EmploymentType getEmploymentType() {
+    public EmpType getEmploymentType() {
         return employmentType;
     }
 
-    public void setEmploymentType(EmploymentType employmentType) {
+    public void setEmploymentType(EmpType employmentType) {
         this.employmentType = employmentType;
     }
 
@@ -147,20 +115,5 @@ public class Teacher {
     public void setEmploymentEnd(LocalDate employmentEnd) {
         this.employmentEnd = employmentEnd;
     }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public House getHouse() {
-        return house;
-    }
-
-    public void setHouse(House house) {
-        this.house = house;
-    }
 }
+

@@ -3,11 +3,11 @@ package kea.exercise.studentadmin;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.sql.SQLOutput;
+
 @SpringBootApplication
-public class HogwartsPart3RestApplication {
-
+public class StudentAdminApplication {
     public static void main(String[] args) {
-        SpringApplication.run(HogwartsPart3RestApplication.class, args);
+        SpringApplication.run(StudentAdminApplication.class, args);
     }
-
 }

@@ -1,4 +1,4 @@
-package kea.exercise.studentadmin.dtos;
+package kea.exercise.studentadmin.dtos.course;
 
 import kea.exercise.studentadmin.models.Course;
 import kea.exercise.studentadmin.models.Student;

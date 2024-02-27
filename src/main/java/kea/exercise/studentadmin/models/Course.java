@@ -2,54 +2,38 @@ package kea.exercise.studentadmin.models;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
-
 
 @Entity
 public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
     private String subject;
     private int schoolYear;
     private boolean current;
-    @ManyToMany
-    private List<Student> students;
-    @ManyToOne
-    private Teacher teacher;
-    public Course() {
-    }
 
-    public Course(Teacher teacher, String subject, int schoolYear, boolean current, List<Student> students) {
+    private @ManyToOne(fetch = FetchType.EAGER) Teacher teacher;
+    private @ManyToMany(fetch = FetchType.EAGER) List<Student> students = new ArrayList<>();
+
+    public Course(Long id, String subject, int schoolYear, boolean current, Teacher teacher, List<Student> students) {
+        this.id = id;
         this.subject = subject;
         this.schoolYear = schoolYear;
         this.current = current;
-        this.students = students;
         this.teacher = teacher;
+        this.students = students;
     }
 
-    public Course(Course otherCourse) {
-        this.id = otherCourse.getId();
-        this.subject = otherCourse.getSubject();
-        this.schoolYear = otherCourse.getSchoolYear();
-        this.current = otherCourse.isCurrent();
-        this.students = otherCourse.getStudents();
-        this.teacher = otherCourse.getTeacher();
+    public Course() {
     }
 
-    public void copyFrom(Course otherCourse) {
-        this.setSubject(otherCourse.getSubject());
-        this.setSchoolYear(otherCourse.getSchoolYear());
-        this.setCurrent(otherCourse.isCurrent());
-        this.setStudents(otherCourse.getStudents());
-        this.setTeacher(otherCourse.getTeacher());
-    }
-
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -77,6 +61,14 @@ public class Course {
         this.current = current;
     }
 
+    public Teacher getTeacher() {
+        return teacher;
+    }
+
+    public void setTeacher(Teacher teacher) {
+        this.teacher = teacher;
+    }
+
     public List<Student> getStudents() {
         return students;
     }
@@ -85,15 +77,5 @@ public class Course {
         this.students = students;
     }
 
-    public void setStudentToCourse(Student student) {
-        students.add(student);
-    }
-
-    public Teacher getTeacher() {
-        return teacher;
-    }
-
-    public void setTeacher(Teacher teacher) {
-        this.teacher = teacher;
-    }
+    public void addStudent(Student student) { this.students.add(student); }
 }
