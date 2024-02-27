@@ -77,6 +77,7 @@ public class CourseController {
         return ResponseEntity.of(courseService.addStudentsToCourse(id, studentIds));
     }
 
+
     @PostMapping("/{id}/students/names")
     public ResponseEntity<CourseResponseDTO> addStudentsToCourseByNames(@PathVariable Long id, @RequestBody StudentDTONames studentNames) {
         return ResponseEntity.of(courseService.addStudentsToCourseByNames(id, studentNames));
