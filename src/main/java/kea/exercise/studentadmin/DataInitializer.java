@@ -1,10 +1,11 @@
-package edu.hogwarts.studentadmin;
+package kea.exercise.studentadmin;
 
 import edu.hogwarts.studentadmin.models.*;
-import edu.hogwarts.studentadmin.repositories.CourseRepository;
-import edu.hogwarts.studentadmin.repositories.HouseRepository;
-import edu.hogwarts.studentadmin.repositories.StudentRepository;
-import edu.hogwarts.studentadmin.repositories.TeacherRepository;
+import kea.exercise.studentadmin.repositories.CourseRepository;
+import kea.exercise.studentadmin.repositories.HouseRepository;
+import kea.exercise.studentadmin.repositories.StudentRepository;
+import kea.exercise.studentadmin.repositories.TeacherRepository;
+import kea.exercise.studentadmin.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

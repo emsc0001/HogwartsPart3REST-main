@@ -1,4 +1,4 @@
-package edu.hogwarts.studentadmin.models;
+package kea.exercise.studentadmin.models;
 
 import jakarta.persistence.*;
 

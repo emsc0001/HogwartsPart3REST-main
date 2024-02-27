@@ -1,6 +1,6 @@
-package edu.hogwarts.studentadmin.repositories;
+package kea.exercise.studentadmin.repositories;
 
-import edu.hogwarts.studentadmin.models.Student;
+import kea.exercise.studentadmin.models.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

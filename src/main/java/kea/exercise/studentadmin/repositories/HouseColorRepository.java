@@ -1,6 +1,6 @@
-package edu.hogwarts.studentadmin.repositories;
+package kea.exercise.studentadmin.repositories;
 
-import edu.hogwarts.studentadmin.models.HouseColor;
+import kea.exercise.studentadmin.models.HouseColor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface HouseColorRepository extends JpaRepository<HouseColor, Integer> {

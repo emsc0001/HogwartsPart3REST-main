@@ -1,9 +1,9 @@
-package edu.hogwarts.studentadmin.models;
+package kea.exercise.studentadmin.models;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import edu.hogwarts.studentadmin.models.DTOs.TeacherPatchDTO;
+import edu.hogwarts.studentadmin.dtos.TeacherPatchDTO;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
