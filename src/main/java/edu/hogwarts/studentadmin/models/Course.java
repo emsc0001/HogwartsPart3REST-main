@@ -17,7 +17,6 @@ public class Course {
     private List<Student> students;
     @ManyToOne
     private Teacher teacher;
-
     public Course() {
     }
 
