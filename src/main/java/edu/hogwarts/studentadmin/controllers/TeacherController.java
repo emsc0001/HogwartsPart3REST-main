@@ -11,74 +11,46 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/teachers")
 public class TeacherController {
-    private final TeacherRepository teacherRepository;
-
-    public TeacherController(TeacherRepository teacherRepository) {
-        this.teacherRepository = teacherRepository;
+    private final TeacherService teacherService;
+    public TeacherController(TeacherService teacherService) {
+        this.teacherService = teacherService;
     }
-
-    @PatchMapping("/teachers/{id}")
-    public ResponseEntity<Teacher> patchTeacher(@PathVariable int id, @RequestBody TeacherPatchDTO teacherDTO) {
-        Optional<Teacher> optionalTeacher = teacherRepository.findById(id);
-
-        if (optionalTeacher.isPresent()) {
-            Teacher existingTeacher = optionalTeacher.get();
-            existingTeacher.applyPatch(teacherDTO);
-
-            teacherRepository.save(existingTeacher);
-            return ResponseEntity.ok().body(existingTeacher);
-        } else {
+    @GetMapping
+    public List<TeacherResponseDTO> getAll() {
+        return teacherService.findAll();
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<Optional<TeacherResponseDTO>> getTeacherById(@PathVariable Long id) {
+        var teacher = teacherService.findById(id);
+        if (teacher.isEmpty()){
             return ResponseEntity.notFound().build();
         }
+        return ResponseEntity.ok(teacher);
+    }
+    @PostMapping
+    public TeacherResponseDTO createTeacher(@RequestBody TeacherRequestDTO teacher) {
+        return teacherService.save(teacher);
     }
 
-    @GetMapping("/teachers/{id}")
-    public ResponseEntity<Teacher> getTeacher(@PathVariable int id) {
-        Optional<Teacher> teacher = teacherRepository.findById(id);
-
-        return ResponseEntity.of(teacher);
+    @PutMapping("/{id}")
+    public ResponseEntity<TeacherResponseDTO> updateTeacher(@PathVariable Long id, @RequestBody TeacherRequestDTO teacher) {
+        return ResponseEntity.of(teacherService.updateIfExists(id, teacher));
     }
 
-    @GetMapping("/teachers")
-    public List<Teacher> getAllTeachers() {
-        List<Teacher> teachers = teacherRepository.findAll();
-
-        return teachers;
+    @PatchMapping("/{id}")
+    public ResponseEntity<TeacherResponseDTO> updateTeacherFields(@PathVariable Long id, @RequestBody Map<String, Object> fields) {
+        return ResponseEntity.of(teacherService.updateTeacherByFields(id, fields));
     }
 
-    @PostMapping("/teachers")
-    public Teacher createTeacher(@RequestBody Teacher teacher) {
-        return teacherRepository.save(teacher);
-    }
-
-    @PutMapping("/teachers/{id}")
-    public ResponseEntity<Teacher> updateTeacher(@PathVariable int id, @RequestBody Teacher teacher) {
-        Optional<Teacher> original = teacherRepository.findById(id);
-
-        if(original.isPresent()) {
-            Teacher originalTeacher = original.get();
-            originalTeacher.copyFrom(teacher);
-
-            Teacher updatedTeacher = teacherRepository.save(originalTeacher);
-            return ResponseEntity.ok().body(updatedTeacher);
-        } else {
-            Teacher newTeacher = new Teacher();
-            newTeacher.copyFrom(teacher);
-
-            Teacher savedTeacher = teacherRepository.save(newTeacher);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedTeacher);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Teacher> deleteTeacher(@PathVariable Long id) {
+        var teacher = teacherService.findById(id);
+        if (teacher.isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
+        teacherService.deleteById(id);
+        return ResponseEntity.ok().build();
     }
-
-    @DeleteMapping("/teachers/{id}")
-    public ResponseEntity<Teacher> deleteTeacher(@PathVariable int id) {
-        Optional<Teacher> teacherToDelete = teacherRepository.findById(id);
-        teacherRepository.deleteById(id);
-        return ResponseEntity.of(teacherToDelete);
-    }
-
 }
-
-
-

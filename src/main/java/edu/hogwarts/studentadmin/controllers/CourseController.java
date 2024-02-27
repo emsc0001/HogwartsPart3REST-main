@@ -12,205 +12,88 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+import java.util.List;
+import java.util.Optional;
+
 @RestController
+@RequestMapping("/courses")
 public class CourseController {
-    private final CourseRepository courseRepository;
-    private final TeacherRepository teacherRepository;
-    private final StudentRepository studentRepository;
+    private final CourseService courseService;
 
-    public CourseController(CourseRepository courseRepository, TeacherRepository teacherRepository,
-                            StudentRepository studentRepository) {
-        this.courseRepository = courseRepository;
-        this.teacherRepository = teacherRepository;
-        this.studentRepository = studentRepository;
+
+    public CourseController(CourseService courseService) {
+        this.courseService = courseService;
     }
 
+    @GetMapping
+    public List<CourseResponseDTO> getAll() {
+        return courseService.findAll();
+    }
 
-    @PutMapping("courses/{id}/teacher")
-    public ResponseEntity<Course> updateCourseTeacher(@PathVariable int id, @RequestBody Teacher teacher) {
-        Optional<Course> course = courseRepository.findById(id);
-        Optional<Teacher> newTeacher = teacherRepository.findById(teacher.getId());
-
-        if (course.isPresent() && newTeacher.isPresent()) {
-            Course existingCourse = course.get();
-            Teacher existingTeacher = newTeacher.get();
-
-            existingCourse.setTeacher(existingTeacher);
-
-            courseRepository.save(existingCourse);
-            return ResponseEntity.ok().body(existingCourse);
-        } else {
+    @GetMapping("/{id}")
+    public ResponseEntity<Optional<CourseResponseDTO>> getCourseById(@PathVariable Long id) {
+        Optional<CourseResponseDTO> course = courseService.findById(id);
+        if (course.isEmpty()){
             return ResponseEntity.notFound().build();
         }
+        return ResponseEntity.ok(course);
     }
-
-    @PostMapping("courses/{id}/students/add_by_id")
-    public ResponseEntity<Course> addStudentsToCourseByID(@PathVariable int id, @RequestBody Map<String, List<Student>> requestBody) {
-        Optional<Course> course = courseRepository.findById(id);
-
-        List<Student> students = requestBody.get("students");
-
-        if (course.isPresent()) {
-            Course existingCourse = course.get();
-
-            for (Student studentItem : students) {
-                Optional<Student> student = studentRepository.findById(studentItem.getId());
-                    if (student.isPresent()) {
-                        Student existingStudent = student.get();
-                        existingCourse.setStudentToCourse(existingStudent);
-                    } else {
-                        System.out.println("Student with ID: " + studentItem.getId() + " not found.");
-                        return ResponseEntity.notFound().build();
-                    }
-            }
-
-            courseRepository.save(existingCourse);
-            return ResponseEntity.ok().body(existingCourse);
-        } else {
+    @GetMapping("/{id}/teacher")
+    public ResponseEntity<Optional<TeacherResponseDTO>> getTeacherByCourseId(@PathVariable Long id) {
+        Optional<TeacherResponseDTO> teacher = courseService.findTeacherByCourseId(id);
+        if (teacher.isEmpty()){
             return ResponseEntity.notFound().build();
         }
+        return ResponseEntity.ok(teacher);
     }
 
-    @PostMapping("courses/{id}/students/add_by_name")
-    public ResponseEntity<Course> addStudentsToCourseByName(@PathVariable int id, @RequestBody Map<String, List<Map<String, String>>> requestBody) {
-        Optional<Course> course = courseRepository.findById(id);
-
-        List<Map<String, String>> students = requestBody.get("students");
-
-        if (course.isPresent()) {
-            Course existingCourse = course.get();
-
-            for (Map<String, String> studentMap : students) {
-                String name = studentMap.get("name");
-                Optional<Student> student = studentRepository.findFirstByAllNameContainingIgnoreCase(name);
-
-                if (student.isPresent()) {
-                    Student existingStudent = student.get();
-                    existingCourse.setStudentToCourse(existingStudent);
-                } else {
-                    System.out.println("No student with name: " + name);
-                    return ResponseEntity.notFound().build();
-                }
-            }
-
-            courseRepository.save(existingCourse);
-            return ResponseEntity.ok().body(existingCourse);
-
-        } else {
+    @GetMapping("/{id}/students")
+    public ResponseEntity<Optional<List<StudentResponseDTO>>> getStudentsByCourseId(@PathVariable Long id) {
+        Optional<List<StudentResponseDTO>> students = courseService.findStudentsByCourseId(id);
+        if (students.isEmpty()){
             return ResponseEntity.notFound().build();
         }
+        return ResponseEntity.ok(students);
     }
 
-
-    @GetMapping("courses/{id}/students")
-    public ResponseEntity<List<Student>> getCourseStudents(@PathVariable int id) {
-        Optional<Course> optionalCourse = courseRepository.findById(id);
-
-        if (optionalCourse.isPresent()) {
-            List<Student> courseStudents = optionalCourse.get().getStudents();
-            return ResponseEntity.ok(courseStudents);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @PostMapping
+    public CourseResponseDTO createCourse(@RequestBody CourseRequestDTO course) {
+        return courseService.save(course);
     }
 
-
-    @GetMapping("courses/{id}/teacher")
-    public ResponseEntity<Teacher> getCourseTeacher(@PathVariable int id) {
-        Optional<Course> course = courseRepository.findById(id);
-
-        if(course.isPresent()) {
-            Teacher teacher = course.get().getTeacher();
-
-            return ResponseEntity.ok().body(teacher);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @PutMapping("/{id}")
+    public ResponseEntity<CourseResponseDTO> updateCourse(@PathVariable Long id, @RequestBody CourseRequestDTO course) {
+        return ResponseEntity.of(courseService.updateIfExists(id, course));
     }
 
-    @GetMapping("/courses/{id}")
-    public ResponseEntity<Course> getCourse(@PathVariable int id) {
-        Optional<Course> course = courseRepository.findById(id);
-
-        return ResponseEntity.of(course);
+    @PatchMapping("/{id}/teacher")
+    public ResponseEntity<CourseResponseDTO> updateTeacher(@PathVariable Long id, @RequestBody TeacherDTOId teacherId) {
+        return ResponseEntity.of(courseService.updateTeacher(id, teacherId));
     }
 
-    @GetMapping("/courses")
-    public List<Course> getAllCourses() {
-        List<Course> courses = courseRepository.findAll();
-
-        return courses;
+    @PostMapping("/{id}/students")
+    public ResponseEntity<CourseResponseDTO> addStudentsToCourse(@PathVariable Long id, @RequestBody StudentDTOIds studentIds) {
+        return ResponseEntity.of(courseService.addStudentsToCourse(id, studentIds));
     }
 
-    @PostMapping("/courses")
-    public Course createCourse(@RequestBody Course course) {
-        return courseRepository.save(course);
+    @PostMapping("/{id}/students/names")
+    public ResponseEntity<CourseResponseDTO> addStudentsToCourseByNames(@PathVariable Long id, @RequestBody StudentDTONames studentNames) {
+        return ResponseEntity.of(courseService.addStudentsToCourseByNames(id, studentNames));
     }
 
-    @PutMapping("/courses/{id}")
-    public ResponseEntity<Course> updateCourse(@PathVariable int id, @RequestBody Course course) {
-        Optional<Course> original = courseRepository.findById(id);
-
-        if(original.isPresent()) {
-            Course originalCourse = original.get();
-            originalCourse.copyFrom(course);
-
-            Course updatedCourse = courseRepository.save(originalCourse);
-            return ResponseEntity.ok().body(updatedCourse);
-        } else {
-            Course newCourse = new Course(course);
-
-            Course savedCourse = courseRepository.save(newCourse);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedCourse);
-        }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<CourseResponseDTO> deleteCourse(@PathVariable Long id) {
+        return ResponseEntity.of(courseService.deleteById(id));
     }
 
-    @DeleteMapping("/courses/{id}")
-    public ResponseEntity<Course> deleteCourse(@PathVariable int id) {
-        Optional<Course> courseToDelete = courseRepository.findById(id);
-
-        if (courseToDelete.isPresent()) {
-            courseToDelete.get().getStudents().clear();
-        }
-
-        courseRepository.deleteById(id);
-
-        return ResponseEntity.of(courseToDelete);
+    @DeleteMapping("/{id}/teacher")
+    public ResponseEntity<CourseResponseDTO> removeTeacherFromCourse(@PathVariable Long id) {
+        return ResponseEntity.of(courseService.removeTeacherFromCourse(id));
     }
 
-    @DeleteMapping("/courses/{id}/teacher")
-    public ResponseEntity<Course> deleteTeacherFromCourse(@PathVariable int id, @RequestBody Teacher teacher) {
-        Optional<Teacher> teacherToDeleteFromCourse = teacherRepository.findById(teacher.getId());
-        Optional<Course> courseToDeleteTeacherFrom = courseRepository.findById(id);
-
-        if (teacherToDeleteFromCourse.isPresent() && courseToDeleteTeacherFrom.isPresent()) {
-            Course existingCourse = courseToDeleteTeacherFrom.get();
-            existingCourse.setTeacher(null);
-
-            courseRepository.save(existingCourse);
-            return ResponseEntity.ok().body(existingCourse);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @DeleteMapping("/{id}/students")
+    public ResponseEntity<CourseResponseDTO> removeStudentsFromCourse(@PathVariable Long id) {
+        return ResponseEntity.of(courseService.removeStudentsFromCourse(id));
     }
-
-    @DeleteMapping("courses/{id}/students")
-    public ResponseEntity<Course> deleteStudentFromCourse(@PathVariable int id, @RequestBody Student student) {
-        Optional<Student> studentToDelete = studentRepository.findById(student.getId());
-        Optional<Course> courseToDeleteStudentFrom = courseRepository.findById(id);
-
-        if (studentToDelete.isPresent() && courseToDeleteStudentFrom.isPresent()) {
-            Course existingCourse = courseToDeleteStudentFrom.get();
-            Student existingStudent = studentToDelete.get();
-
-            existingCourse.getStudents().remove(existingStudent);
-
-            courseRepository.save(existingCourse);
-            return ResponseEntity.ok().body(existingCourse);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
 
 }

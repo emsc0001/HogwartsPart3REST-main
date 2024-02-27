@@ -11,79 +11,45 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/students")
 public class StudentController {
+    private final StudentService studentService;
 
-    private final StudentRepository studentRepository;
-
-    public StudentController(StudentRepository studentRepository) {
-        this.studentRepository = studentRepository;
+    public StudentController(StudentService studentService) {
+        this.studentService = studentService;
     }
 
-    @PatchMapping("/students/{id}")
-    public ResponseEntity<Student> patchStudent(@PathVariable int id, @RequestBody StudentPatchDTO patchDTO) {
-        Optional<Student> optionalStudent = studentRepository.findById(id);
-        if (optionalStudent.isPresent()) {
-            Student existingStudent = optionalStudent.get();
-            existingStudent.applyPatch(patchDTO);
-            studentRepository.save(existingStudent);
-            return ResponseEntity.ok().body(existingStudent);
-        } else {
+    @GetMapping
+    public List<StudentResponseDTO> getAll() {
+        return studentService.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Optional<StudentResponseDTO>> getStudentById(@PathVariable Long id) {
+        var student = studentService.findById(id);
+        if (student.isEmpty()){
             return ResponseEntity.notFound().build();
         }
+        return ResponseEntity.ok(student);
     }
 
-    @GetMapping("/students/name/{name}")
-    public ResponseEntity<Student> findStudentByName(@PathVariable String name) {
-        Optional<Student> student = studentRepository.findFirstByAllNameContainingIgnoreCase(name);
-        System.out.println(name);
-        return ResponseEntity.of(student);
+    @PostMapping
+    public StudentResponseDTO createStudent(@RequestBody StudentRequestDTO student) {
+        return studentService.save(student);
     }
 
-    @GetMapping("/students")
-    public List<Student> getAllStudents() {
-        List<Student> students = studentRepository.findAll();
-
-        return students;
+    @PutMapping("/{id}")
+    public ResponseEntity<StudentResponseDTO> updateStudent(@PathVariable Long id, @RequestBody StudentRequestDTO student) {
+        return ResponseEntity.of(studentService.updateIfExists(id, student));
     }
 
-    @GetMapping("/students/{id}")
-    public ResponseEntity<Student> getStudent(@PathVariable int id) {
-        Optional<Student> student = studentRepository.findById(id);
-
-        return ResponseEntity.of(student);
+    @PatchMapping("/{id}")
+    public ResponseEntity<StudentResponseDTO> updateStudentFields(@PathVariable Long id, @RequestBody Map<String, Object> fields) {
+        return ResponseEntity.of(studentService.updateStudentByFields(id, fields));
     }
 
-    @PostMapping("/students")
-    public Student createStudent(@RequestBody Student student) {
-        return studentRepository.save(student);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<StudentResponseDTO> deleteStudent(@PathVariable Long id) {
+        return ResponseEntity.of(studentService.deleteById(id));
     }
-
-    @PutMapping("/students/{id}")
-    public ResponseEntity<Student> updateStudent(@PathVariable int id, @RequestBody Student student) {
-        Optional<Student> original = studentRepository.findById(id);
-
-        if (original.isPresent()) {
-            Student originalStudent = original.get();
-            originalStudent.copyFrom(student);
-
-            Student updatedStudent = studentRepository.save(originalStudent);
-            return ResponseEntity.ok().body(updatedStudent);
-        } else {
-            Student newStudent = new Student();
-            newStudent.copyFrom(student);
-
-            Student savedStudent = studentRepository.save(newStudent);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedStudent);
-        }
-    }
-
-    @DeleteMapping("/students/{id}")
-    public ResponseEntity<Student> deleteStudent(@PathVariable int id) {
-        Optional<Student> studentToDelete = studentRepository.findById(id);
-        studentRepository.deleteById(id);
-
-        return ResponseEntity.of(studentToDelete);
-    }
-
-
 }
